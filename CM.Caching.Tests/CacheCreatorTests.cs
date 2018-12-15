@@ -26,7 +26,7 @@ namespace CM.Caching.Tests
             //save to file
             var provider = new CSharpCodeProvider(new Dictionary<String, String> { { "CompilerVersion", "v4.0" } });
             var firstTypeName = compileUnit.Namespaces[0].Types[0].Name;
-            string sourceFile = $"..\\..\\Examples\\Generated\\{firstTypeName}{(provider.FileExtension[0] == '.' ? string.Empty : ".")}{provider.FileExtension}";
+            string sourceFile = $"Generated\\{firstTypeName}{(provider.FileExtension[0] == '.' ? string.Empty : ".")}{provider.FileExtension}";
             using (var sw = new StreamWriter(sourceFile, false))
             {
                 var tw = new IndentedTextWriter(sw, "    ");
