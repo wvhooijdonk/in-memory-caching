@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace CM.Caching.Tests
+namespace CM.Caching.Examples
 {
     public interface ISource
     {

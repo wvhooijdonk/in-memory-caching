@@ -50,10 +50,7 @@
     <Reference Include="System.Runtime.Caching" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Examples\ISource.cs" />
     <Compile Include="CacheCreatorTests.cs" />
-    <Compile Include="Examples\Source.cs" />
-    <Compile Include="Examples\SourceObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -63,6 +60,10 @@
     <ProjectReference Include="..\CM.Caching\CM.Caching.csproj">
       <Project>{e56a8fbd-cbbe-49bd-bf2e-ed381c6bc12b}</Project>
       <Name>CM.Caching</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CM.Chaching.Examples\CM.Chaching.Examples.csproj">
+      <Project>{d12c31d0-79b3-41d1-8a2e-296f9c15264b}</Project>
+      <Name>CM.Chaching.Examples</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

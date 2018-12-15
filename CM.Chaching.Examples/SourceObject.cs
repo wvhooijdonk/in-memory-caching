@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CM.Caching.Tests
+namespace CM.Caching.Examples
 {
     public class SourceObject
     {
