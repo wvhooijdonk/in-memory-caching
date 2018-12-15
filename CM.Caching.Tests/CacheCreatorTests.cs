@@ -18,7 +18,7 @@ namespace CM.Caching.Tests
         }
 
         [TestMethod]
-        public void CompileAndInstantiate()
+        public void GenerateSourceCode()
         {
             string className;
             var compileUnit = ClassCache.createCompileUnit<ISource>(out className);
