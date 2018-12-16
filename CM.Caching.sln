@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CM.Chaching.Examples", "CM.Chaching.Examples\CM.Chaching.Examples.csproj", "{D12C31D0-79B3-41D1-8A2E-296F9C15264B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CM.Caching.Examples", "CM.Caching.Examples\CM.Caching.Examples.csproj", "{D12C31D0-79B3-41D1-8A2E-296F9C15264B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

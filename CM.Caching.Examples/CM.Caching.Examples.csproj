@@ -7,8 +7,8 @@
     <ProjectGuid>{D12C31D0-79B3-41D1-8A2E-296F9C15264B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CM.Chaching.Examples</RootNamespace>
-    <AssemblyName>CM.Chaching.Examples</AssemblyName>
+    <RootNamespace>CM.Caching.Examples</RootNamespace>
+    <AssemblyName>CM.Caching.Examples</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
