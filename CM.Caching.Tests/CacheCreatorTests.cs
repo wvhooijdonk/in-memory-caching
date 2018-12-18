@@ -3,7 +3,9 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.Caching;
 using System.Text;
+using System.Threading.Tasks;
 using CM.Caching.Examples;
 using Microsoft.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,9 +16,15 @@ namespace CM.Caching.Tests
     public class CacheCreatorTests
     {
         [TestMethod]
-        public void TestAll()
+        public async Task TestAll()
         {
-            var instance = ClassCache.Create<ISource, Source>(new Source(), "name of cache");
+            var cachedSource = ClassCache.Create<ISource, Source>(new Source(), "name of cache", (methodName) => new CacheItemPolicy());
+            var stringResult = cachedSource.GetData("GetDataParamValue");
+            Console.WriteLine($"GetData: {stringResult}");
+            var source = await cachedSource.GetDataAsync("GetDataAsyncParamValue");
+            Console.WriteLine($"GetDataAsync: {source}");
+            var intResult = cachedSource.GetSomeMoreData(null);
+            Console.WriteLine($"GetSomeMoreData: {intResult}");
         }
 
         [TestMethod]
