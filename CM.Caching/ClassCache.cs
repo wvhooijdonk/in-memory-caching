@@ -16,7 +16,7 @@ namespace CM.Caching
     public static class ClassCache
     {
         private static Random randomizer = new Random();
-        public static T Create<T, C>(C instance, string cacheName, Func<string, CacheItemPolicy> createCacheItemPolicy) where C : T
+        public static T Create<T, C>(C instance, string cacheName, Func<CacheItemPolicy> createCacheItemPolicy) where C : T
         {
             string classFullName;
             var compileUnit = createCompileUnit<T>(out classFullName);
@@ -110,10 +110,9 @@ namespace CM.Caching
         private static CodeMemberField[] implementPrivateVariables<T>(CodeTypeDeclaration cachedClass)
         {
             return new CodeMemberField[] {
-                new CodeMemberField(typeof(ConcurrentDictionary<string, ObjectCache>), "caches"),
+                new CodeMemberField(typeof(MemoryCache), "cache"),
                 new CodeMemberField(typeof(T), "instance"),
-                new CodeMemberField(typeof(string), "cacheName"),
-                new CodeMemberField(typeof(Func<string, CacheItemPolicy>), "createCacheItemPolicy")
+                new CodeMemberField(typeof(Func<CacheItemPolicy>), "createCacheItemPolicy")
             };
         }
 
@@ -146,11 +145,11 @@ namespace CM.Caching
 
             //implement assigning parameters to internal variables
             implementAssignmentOfConstructorParameter(constructor, typeof(T), "instance");
-            implementAssignmentOfConstructorParameter(constructor, typeof(string), "cacheName");
-            implementAssignmentOfConstructorParameter(constructor, typeof(Func<string, CacheItemPolicy>), "createCacheItemPolicy");
-            
-            var cachesReference = new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), "caches");
-            constructor.Statements.Add(new CodeAssignStatement(cachesReference, new CodeObjectCreateExpression(typeof(ConcurrentDictionary<string, ObjectCache>))));
+            constructor.Parameters.Add(new CodeParameterDeclarationExpression(typeof(string), "cacheName"));
+            implementAssignmentOfConstructorParameter(constructor, typeof(Func<CacheItemPolicy>), "createCacheItemPolicy");
+
+            var cacheReference = new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), "cache");
+            constructor.Statements.Add(new CodeAssignStatement(cacheReference, new CodeObjectCreateExpression(typeof(MemoryCache), new CodeVariableReferenceExpression("cacheName"))));
             return constructor;
             
         }
@@ -173,20 +172,23 @@ namespace CM.Caching
                 method.Parameters.Add(parameterDeclarationExpression);
             }
 
-            //method body
-            var methodCallToKeyMethodParameters = parameterReferences;
+            var methodCallToKeyMethodParameters = new List<CodeExpression>();
+            methodCallToKeyMethodParameters.AddRange(parameterReferences);
             methodCallToKeyMethodParameters.Insert(0, new CodePrimitiveExpression(methodInfo.Name));
+
+            //string cacheKey;
             var declareVariableCacheKey = new CodeVariableDeclarationStatement(typeof(string), "cacheKey");
             method.Statements.Add(declareVariableCacheKey);
+            
+            //cacheKey = CM.Caching.ClassCache.MethodCallToKey("<MethodName>", param1, param2, ...);
             var methodCallToKeyMethod = new CodeMethodInvokeExpression(new CodeTypeReferenceExpression(typeof(ClassCache)), "MethodCallToKey", methodCallToKeyMethodParameters.ToArray());
             var assignMethodCallToKeyResult = new CodeAssignStatement(new CodeVariableReferenceExpression("cacheKey"), methodCallToKeyMethod);
             method.Statements.Add(assignMethodCallToKeyResult);
 
-            var debugWriteLineInvocation = new CodeMethodInvokeExpression(new CodeTypeReferenceExpression(typeof(Debug)), "WriteLine", new CodeVariableReferenceExpression("cacheKey"));
-            method.Statements.Add(debugWriteLineInvocation);
-
-            //var throwNotImplementedException = new CodeThrowExceptionStatement(new CodeObjectCreateExpression("System.NotImplementedException"));
-            //method.Statements.Add(th
+            //string valueFactory() { instance.GetData(myParameter); }           
+            var gMethod = new CodeMemberMethod() { Name = "g", ReturnType = new CodeTypeReference(methodInfo.ReturnType) };
+            gMethod.Statements.Add(new CodeMethodReturnStatement(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeVariableReferenceExpression("instance"), methodInfo.Name), parameterReferences.ToArray())));
+            method.Statements.Add(gMethod);
 
             CodeExpression returnValueExpression;
             if (methodInfo.ReturnType.BaseType == typeof(Task))
@@ -195,9 +197,26 @@ namespace CM.Caching
                 returnValueExpression = new CodeMethodInvokeExpression(new CodeTypeReferenceExpression(typeof(Task)), "FromResult", new CodeDefaultValueExpression(new CodeTypeReference(innerTaskType)));
             }
             else
-                returnValueExpression = new CodeDefaultValueExpression(new CodeTypeReference(methodInfo.ReturnType));
+                //return GetFromCache(cache, cacheKey, instanceMethodCall, createCacheItemPolicy);
+                returnValueExpression = new CodeMethodInvokeExpression(
+                    new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(typeof(ClassCache)), "GetFromCache", new CodeTypeReference(methodInfo.ReturnType)),
+                    new CodeVariableReferenceExpression("cache"), 
+                    new CodeVariableReferenceExpression("cacheKey"),
+                    new CodeVariableReferenceExpression("valueFactory"),
+                    new CodeVariableReferenceExpression("createCacheItemPolicy"));
+
             method.Statements.Add(new CodeMethodReturnStatement(returnValueExpression));
             return method;
         }
+
+        public static T GetFromCache<T>(MemoryCache cache, string key, Func<T> valueFactory, Func<CacheItemPolicy> createCacheItemPolicy)
+        {
+            var newValue = new Lazy<T>(valueFactory);
+            var lazyValue = (Lazy<T>)cache.AddOrGetExisting(key, newValue, createCacheItemPolicy());
+            var value = (lazyValue ?? newValue).Value;
+            Debug.WriteLine($"'{key}' -> '{value}'");
+            return value;
+        }
+        
     }
 }

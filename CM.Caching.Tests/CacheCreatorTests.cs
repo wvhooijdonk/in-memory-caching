@@ -18,11 +18,14 @@ namespace CM.Caching.Tests
         [TestMethod]
         public async Task TestAll()
         {
-            var cachedSource = ClassCache.Create<ISource, Source>(new Source(), "name of cache", (methodName) => new CacheItemPolicy());
+            var cachedSource = ClassCache.Create<ISource, Source>(new Source(), "nameOfCache", () => new CacheItemPolicy() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(1) });
+
             var stringResult = cachedSource.GetData("GetDataParamValue");
             Console.WriteLine($"GetData: {stringResult}");
+
             var source = await cachedSource.GetDataAsync("GetDataAsyncParamValue");
             Console.WriteLine($"GetDataAsync: {source}");
+
             var intResult = cachedSource.GetSomeMoreData(null);
             Console.WriteLine($"GetSomeMoreData: {intResult}");
         }
