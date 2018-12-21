@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Caching;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,6 +73,7 @@ namespace CM.Caching
             //nameSpace.Imports.Add(new CodeNamespaceImport(type.Namespace));
 
             compileUnit.Namespaces.Add(nameSpace);
+
             var className = $"ClassCache{randomizer.Next(int.MaxValue)}";
             classFullName = $"{nameSpace.Name}.{className}";
             var cachedClass = implementClass(type, nameSpace, className);
@@ -186,15 +188,17 @@ namespace CM.Caching
             method.Statements.Add(assignMethodCallToKeyResult);
 
             //string valueFactory() { instance.GetData(myParameter); }           
-            var gMethod = new CodeMemberMethod() { Name = "g", ReturnType = new CodeTypeReference(methodInfo.ReturnType) };
-            gMethod.Statements.Add(new CodeMethodReturnStatement(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeVariableReferenceExpression("instance"), methodInfo.Name), parameterReferences.ToArray())));
-            method.Statements.Add(gMethod);
+            //var gMethod = new CodeMemberMethod() { Name = "g", ReturnType = new CodeTypeReference(methodInfo.ReturnType) };
+            //gMethod.Statements.Add(new CodeMethodReturnStatement(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeVariableReferenceExpression("instance"), methodInfo.Name), parameterReferences.ToArray())));
+            //method.Statements.Add(gMethod);
 
             CodeExpression returnValueExpression;
             if (methodInfo.ReturnType.BaseType == typeof(Task))
             {
                 var innerTaskType = methodInfo.ReturnType.GenericTypeArguments[0];
                 returnValueExpression = new CodeMethodInvokeExpression(new CodeTypeReferenceExpression(typeof(Task)), "FromResult", new CodeDefaultValueExpression(new CodeTypeReference(innerTaskType)));
+
+                
             }
             else
                 //return GetFromCache(cache, cacheKey, instanceMethodCall, createCacheItemPolicy);
